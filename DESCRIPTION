@@ -26,7 +26,10 @@ Imports:
     tm,
     topicmodels,
     utils,
-    tidyr
+    tidyr,
+    reticulate,
+    sentimentr,
+    data.table
 URL: https://github.com/Stan7s/TextSEM
 BugReports: https://github.com/Stan7s/TextSEM/issues
 Depends: 

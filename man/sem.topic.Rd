@@ -4,7 +4,7 @@
 \alias{sem.topic}
 \title{Perform Structural Equation Modeling with Latent Dirichlet Allocation}
 \usage{
-sem.topic(df, id_var, text_var, model)
+sem.topic(df, id_var, text_var, n_topics, model)
 }
 \arguments{
 \item{df}{A data frame containing the data.}
@@ -12,6 +12,8 @@ sem.topic(df, id_var, text_var, model)
 \item{id_var}{A variable in the data frame that uniquely identifies each document.}
 
 \item{text_var}{A variable in the data frame containing the text data to be analyzed.}
+
+\item{n_topics}{Number of topics to be extracted.}
 
 \item{model}{A description of the user-specified model. Typically, the model is described using the lavaan model syntax. See model.syntax for more information. Alternatively, a parameter table (eg. the output of the lavaanify() function) is also accepted.}
 }

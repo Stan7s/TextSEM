@@ -4,7 +4,7 @@
 \alias{sem.lda}
 \title{Perform Latent Dirichlet Allocation on a Data Frame}
 \usage{
-sem.lda(df, id_var, text_var)
+sem.lda(df, id_var, text_var, n_topics)
 }
 \arguments{
 \item{df}{A data frame containing the data.}
@@ -12,6 +12,8 @@ sem.lda(df, id_var, text_var)
 \item{id_var}{A variable in the data frame that uniquely identifies each document.}
 
 \item{text_var}{A variable in the data frame containing the text data to be analyzed.}
+
+\item{n_topics}{Number of topics to be extracted.}
 }
 \value{
 A topic model object of class "LDA" from the `topicmodels` package.

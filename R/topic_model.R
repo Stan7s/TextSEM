@@ -5,6 +5,7 @@
 #' @param df A data frame containing the data.
 #' @param id_var A variable in the data frame that uniquely identifies each document.
 #' @param text_var A variable in the data frame containing the text data to be analyzed.
+#' @param n_topics Number of topics to be extracted.
 #'
 #' @return A topic model object of class "LDA" from the `topicmodels` package.
 #' @import dplyr
@@ -21,7 +22,7 @@
 #' lda.model <- sem.lda(df, id_var = "profid", text_var = "comments")
 #' lda.model
 #' }
-sem.lda <- function(df, id_var, text_var){
+sem.lda <- function(df, id_var, text_var, n_topics){
 
   # Split text into terms (words)
   df.tm <- unnest_tokens(df, word, {{text_var}})
@@ -42,7 +43,7 @@ sem.lda <- function(df, id_var, text_var){
   df.dtm <- tm::removeSparseTerms(df.dtm, .995)
 
   ## Latent Dirichlet Allocation (LDA): https://en.wikipedia.org/wiki/Latent_Dirichlet_allocation
-  topicmodels::LDA(df.dtm, k = 6, control=list(seed=20240305))
+  topicmodels::LDA(df.dtm, k = n_topics, control=list(seed=20240305))
 }
 
 
@@ -54,6 +55,7 @@ sem.lda <- function(df, id_var, text_var){
 #' @param id_var A variable in the data frame that uniquely identifies each document.
 #' @param text_var A variable in the data frame containing the text data to be analyzed.
 #' @param model A description of the user-specified model. Typically, the model is described using the lavaan model syntax. See model.syntax for more information. Alternatively, a parameter table (eg. the output of the lavaanify() function) is also accepted.
+#' @param n_topics Number of topics to be extracted.
 #'
 #' @return A list containing two elements: `model` (the fitted SEM model) and `lda` (the LDA model).
 #' @import dplyr
@@ -71,10 +73,10 @@ sem.lda <- function(df, id_var, text_var){
 #'           topic1 + topic2 + topic3 + topic4 + topic5
 #'          '
 #' }
-sem.topic <- function(df, id_var, text_var, model){
+sem.topic <- function(df, id_var, text_var, n_topics, model){
 
   # Get LDA metrix
-  df.lda <- sem.lda(df, id_var, text_var)
+  df.lda <- sem.lda(df, id_var, text_var, n_topics)
 
   ## Gamma (per-document-per-topic probability): the proportion of the document that is made up of words from the assigned topic
   document.prob <- tidytext::tidy(df.lda, matrix = "gamma")
@@ -86,32 +88,6 @@ sem.topic <- function(df, id_var, text_var, model){
   sem.data <- left_join(df, document.prob, by=join_by({{id_var}}==document))
 
   list(model = lavaan::sem(model = model, data = sem.data), lda = df.lda)
-}
-
-#' Plot SEM Path Diagram with topic model
-#'
-#' This function plots the path diagram of a Structural Equation Modeling (SEM) with topic model.
-#'
-#' @param sem.model A fitted SEM model object.
-#'
-#' @return A rendered graph visualization of the SEM path diagram.
-#' @import dplyr
-#' @import lavaan
-#' @importFrom RAMpath lavaan2ram ramPathBridge
-#' @importFrom DiagrammeR grViz
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' # Assuming 'fit' is a fitted SEM model object
-#' sem.topic.path(fit)
-#' }
-sem.topic.path <- function(sem.model){
-
-  plot.model <- RAMpath::lavaan2ram(sem.model, ram.out = F)
-  plot.model.path <- RAMpath::ramPathBridge(plot.model, F, F)
-  plot(plot.model.path, 'topic_model', output.type='dot')
-  DiagrammeR::grViz('topic_model.dot')
 }
 
 #' Plot Top Terms in LDA Topics

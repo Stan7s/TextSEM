@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of TextSEM is to ...
+The goal of TextSEM is to incorporate SEM with text data.
 
 ## Installation
 
@@ -31,25 +31,36 @@ devtools::install_github("Stan7s/TextSEM")
 
 ## Example
 
-This is a basic example which shows you how to solve a common problem:
-
-```{r example}
+```{r eval = FALSE}
 library(TextSEM)
-## basic example code
 ```
 
-What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
 
-```{r cars}
-summary(cars)
+### Sentiment Analysis
+
+```{r}
+
 ```
 
-You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this.
 
-You can also embed plots, for example:
+### Topic Modeling
 
-```{r pressure, echo = FALSE}
-plot(pressure)
+```{r eval = FALSE}
+data(prof.nest)
+str(prof.nest)
+
+model <- ' rating ~ book + difficulty +
+                  topic1 + topic2 + topic3 + topic4 + topic5
+         '
+res <- sem.topic(prof.nest, id_var = 'profid', text_var = 'comments', model = model)
+sem.topic.path(res$model)
+sem.topic.plot(res$lda)
 ```
 
-In that case, don't forget to commit and push the resulting figure files, so they display on GitHub and CRAN.
+
+### Sentence Embedding
+
+```{r}
+
+```
+

@@ -7,7 +7,7 @@
 sem.sentiment(
   model,
   data,
-  text_var,
+  text_vars,
   text_stats = c("OverallSenti"),
   polarity_dt = lexicon::hash_sentiment_jockers_rinker,
   valence_shifters_dt = lexicon::hash_valence_shifters,
@@ -21,7 +21,7 @@ sem.sentiment(
 
 \item{data}{A data frame containing the input data.}
 
-\item{text_var}{A character vector of text variable names in the data frame for which sentiment analysis should be performed.}
+\item{text_vars}{A character vector of text variable names in the data frame for which sentiment analysis should be performed.}
 
 \item{text_stats}{A character vector of text sentiment statistics to be added to the SEM. Currently supports only 'OverallSenti' (overall sentiment).}
 

@@ -56,13 +56,13 @@ model.
 # Predictor: book, attendance, difficulty
 # Mediator: comments
 
-model <- ' rating ~ book + attendance + difficulty + comments
+model <- ' rating ~ book + attendance + difficulty + comments + tags
            grade ~ book + attendance + difficulty + comments
            comments ~ book + attendance + difficulty
          '
 res <- sem.sentiment(model = model,
                 data = prof1000,
-                text_var=c('comments'))
+                text_var=c('tags', 'comments'))
 
 res$model
 summary(res$estimates, fit = TRUE)
@@ -102,9 +102,11 @@ data frame.
 ``` r
 prof.nest <- prof1000 %>% group_by(profid) %>%
 summarise(comments = paste(comments, collapse = " "),
-  rating = mean(rating, na.rm = TRUE), difficulty=mean(difficulty, na.rm = TRUE),
-  book = mean(book, na.rm = TRUE), grade=mean(grade, na.rm = TRUE))
-
+          tags = paste(tags, collapse = ";"),
+          rating = mean(rating, na.rm = TRUE), 
+          difficulty=mean(difficulty, na.rm = TRUE),
+          book = mean(book, na.rm = TRUE), 
+          grade=mean(grade, na.rm = TRUE))
 # The nested dataset is also stored in this package:
 # data(prof.nest)
 
@@ -117,27 +119,39 @@ data \[@jacobucci2020\] based on cross validation. Here, we directly fit
 the model 6 topics.
 
 ``` r
-model <- ' rating ~ book + difficulty +
-                  topic1 + topic2 + topic3 + topic4 + topic5
-         '
-res <- sem.topic(prof.nest, id_var = 'profid', text_var = 'comments', n_topics = 6, model = model)
-summary(res$model, fit=TRUE)
+model <- ' rating ~ book + difficulty + comments'
+res <- sem.topic(model = model, 
+                 data = prof.nest, 
+                 text_var = c('comments'), 
+                 n_topics = c(6))
+summary(res$estimates, fit=TRUE)
 ```
 
 Plot the top-frequency terms of each topic:
 
 ``` r
-sem.topic.plot(res$lda)
+sem.topic.plot(res$lda$comments)
 ```
 
 Plot the path diagram:
 
 ``` r
-plot.res <- lavaan2ram(res$model, ram.out = F)
+plot.res <- lavaan2ram(res$estimates, ram.out = F)
 plot.res.path <- ramPathBridge(plot.res, F, F)
 plot(plot.res.path, 'topic', output.type='dot')
 
 grViz('topic.dot')
+```
+
+Note that multiple text variables can be included:
+
+``` r
+model <- ' rating ~ book + difficulty + comments + tags'
+res <- sem.topic(model = model, 
+                 data = prof.nest, 
+                 text_var = c('comments', 'tags'), 
+                 n_topics = c(6, 3))
+summary(res$estimates, fit=TRUE)
 ```
 
 ### Sentence Embedding

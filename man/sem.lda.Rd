@@ -4,16 +4,20 @@
 \alias{sem.lda}
 \title{Perform Latent Dirichlet Allocation on a Data Frame}
 \usage{
-sem.lda(df, id_var, text_var, n_topics)
+sem.lda(data, text_var, n_topic, method = "VEM", sparse = 0.995, seed = 42)
 }
 \arguments{
-\item{df}{A data frame containing the data.}
-
-\item{id_var}{A variable in the data frame that uniquely identifies each document.}
+\item{data}{A data frame containing the data.}
 
 \item{text_var}{A variable in the data frame containing the text data to be analyzed.}
 
-\item{n_topics}{Number of topics to be extracted.}
+\item{n_topic}{Number of topics to be extracted.}
+
+\item{method}{The method to be used for LDA fitting; currently method = "VEM" or method= "Gibbs" are supported.}
+
+\item{sparse}{A numeric for the maximal allowed sparsity in the range from bigger zero to smaller one.}
+
+\item{seed}{Random seed for LDA estimation}
 }
 \value{
 A topic model object of class "LDA" from the `topicmodels` package.
@@ -24,7 +28,7 @@ This function takes a data frame and performs text preprocessing followed by Lat
 \examples{
 \dontrun{
 data(prof.nest)
-lda.model <- sem.lda(df, id_var = "profid", text_var = "comments")
+lda.model <- sem.lda(df, text_var = c("comments"), n_topic = c(6))
 lda.model
 }
 }

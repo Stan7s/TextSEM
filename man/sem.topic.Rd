@@ -4,21 +4,37 @@
 \alias{sem.topic}
 \title{Perform Structural Equation Modeling with Latent Dirichlet Allocation}
 \usage{
-sem.topic(df, id_var, text_var, n_topics, model)
+sem.topic(
+  model,
+  data,
+  text_vars,
+  n_topics,
+  method = "VEM",
+  sparse = 0.995,
+  seed = 42
+)
 }
 \arguments{
-\item{df}{A data frame containing the data.}
-
-\item{id_var}{A variable in the data frame that uniquely identifies each document.}
-
-\item{text_var}{A variable in the data frame containing the text data to be analyzed.}
-
-\item{n_topics}{Number of topics to be extracted.}
-
 \item{model}{A description of the user-specified model. Typically, the model is described using the lavaan model syntax. See model.syntax for more information. Alternatively, a parameter table (eg. the output of the lavaanify() function) is also accepted.}
+
+\item{data}{A data frame containing the data.}
+
+\item{text_vars}{A character vector of text variable names in the data frame containing the text data to be analyzed.}
+
+\item{n_topics}{A numeric vector containing number of topics to be extracted for each text variable.}
+
+\item{method}{The method to be used for LDA fitting; currently method = "VEM" or method= "Gibbs" are supported.}
+
+\item{sparse}{A numeric for the maximal allowed sparsity in the range from bigger zero to smaller one.}
+
+\item{seed}{Random seed for LDA estimation}
 }
 \value{
-A list containing two elements: `model` (the fitted SEM model) and `lda` (the LDA model).
+A list containing four elements:
+\item{model}{A character string representing the modified SEM with added topic variables.}
+\item{data}{A data frame with added topic statistics.}
+\item{estimates}{The fitted SEM model object.}
+\item{lda}{A vector of LDA model objects.}
 }
 \description{
 This function performs structural equation modeling (SEM) combined with Latent Dirichlet Allocation (LDA) to analyze text data.
@@ -26,10 +42,11 @@ This function performs structural equation modeling (SEM) combined with Latent D
 \examples{
 \dontrun{
 data(prof.nest)
-res <- sem.topic(prof.nest, 'profid', 'comments')
+model <- 'rating ~ book + difficulty + comments + tags'
+res <- sem.topic(model = model,
+                 data = prof.nest,
+                 text_vars = c('comments', 'tags'),
+                 n_topics = c(6, 3))
 summary(res$model, fit=TRUE)
-model <- 'rating ~ book + difficulty +
-          topic1 + topic2 + topic3 + topic4 + topic5
-         '
 }
 }

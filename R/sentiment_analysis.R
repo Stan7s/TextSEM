@@ -3,7 +3,7 @@
 #' This function integrates sentiment analysis into a structural equation model (SEM) by calculating sentiment scores for specified text variables and incorporating them as additional variables in the SEM.
 #'
 #' @param model The structural equation model specified as a character string.
-#' @param data A data frame containing the input data.
+#' @param df A data frame containing the input data.
 #' @param text_vars A character vector of text variable names in the data frame for which sentiment analysis should be performed.
 #' @param text_stats A character vector of text sentiment statistics to be added to the SEM. Currently supports only 'OverallSenti' (overall sentiment).
 #' @param polarity_dt A data table for polarity lexicon to be used for sentiment analysis. Defaults to `lexicon::hash_sentiment_jockers_rinker`.
@@ -19,12 +19,14 @@
 #' @importFrom lavaan lavParseModelString lavaanify sem
 #' @importFrom sentimentr sentiment_by
 #' @importFrom data.table rbindlist
+#' @importFrom sentiment.ai sentiment_score
 #' @export
 #'
 sem.sentiment <- function(model,
-                     data,
+                     df,
                      text_vars,
-                     text_stats=c('OverallSenti'),
+                     method="sentimentr",
+                     text_stats=c('sentiment'),
                      polarity_dt = lexicon::hash_sentiment_jockers_rinker,
                      valence_shifters_dt = lexicon::hash_valence_shifters,
                      missing = 'ML',
@@ -43,27 +45,31 @@ sem.sentiment <- function(model,
   N <- length(text_vars) # Number of text variables
   if (N > 0){
     ## now get the sentiment score of the text
-    text_score <- list()
+    text_scores <- list()
 
-    batch_sentiment_by <- function(reviews, batch_size = 200, ...) {
-      review_batches <- split(reviews, ceiling(seq_along(reviews)/batch_size))
-      x <- data.table::rbindlist(lapply(review_batches, sentiment_by))
-      x[, element_id := .I]
-      x[]
+    batch_sentiment <- function(text, batch_size = 200, ...) {
+      if(method == "sentimentr"){
+        text_batches <- split(text, ceiling(seq_along(text) / batch_size))
+        scores <- data.table::rbindlist(lapply(text_batches, sentiment_by))$ave_sentiment
+      }else if(method == "sentiment.ai"){
+        scores <- unname(sentiment_score(text))
+      }
+      return(scores)
     }
 
     for(i in 1:N){
-      sentiment_result <- batch_sentiment_by(data[, text_vars[i]]) # Compute sentiment scores
-      text_score[[i]] <- sentiment_result$ave_sentiment
+      sentiment_result <- batch_sentiment(df[, text_vars[i]]) # Compute sentiment scores
+      text_scores[[i]] <- sentiment_result
     }
-    names(text_score) <- text_vars
+    names(text_scores) <- text_vars
     # print("text_score")
     # print(as.data.frame(text_score))
 
-    data_new <- cbind(data, as.data.frame(text_score))
-    names(data_new) <- c(names(data), paste0(rep(text_vars, each = length(text_stats)), '.', text_stats))
-    # print("data_new")
-    # print(names(data_new))
+    print("456")
+    data_new <- cbind(df, as.data.frame(text_scores))
+    names(data_new) <- c(names(df), paste0(rep(text_vars, each = length(text_stats)), '.', text_stats))
+    print("data_new")
+    print(names(data_new))
 
     model_lavaanify <- lavaanify(model)
     model_user <- model_lavaanify[model_lavaanify$user==1, ]
@@ -73,7 +79,7 @@ sem.sentiment <- function(model,
     model_new <- c()
     for(i in 1:nrow(model_user)){
       row <- model_user[i,]
-      print(row)
+      # print(row)
       if((row['lhs'] %in% text_vars) && (row['rhs'] %in% text_vars)){
         model_new <- c(model_new, paste0(rep(paste0(row['lhs'], '.', text_stats), each = length(text_stats)),
                                          ' ', row['op'], ' ', rep(paste0(row['rhs'], '.', text_stats), length(text_stats))))
@@ -89,7 +95,7 @@ sem.sentiment <- function(model,
     # model_new <- paste0(model_new, collapse = '\n')
   }
   model_res <- sem(model=model_new, data=data_new,
-                   missing = missing, fixed.x = fixed.x, ...)
+                   missing = missing, fixed.x = fixed.x)
 
   return(list(model=model_new, data=data_new, estimates=model_res))
 }

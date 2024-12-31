@@ -36,6 +36,20 @@ library(RAMpath)
 library(DiagrammeR)
 ```
 
+When using it for the first time, run:
+
+```{r}
+textsem_install() 
+```
+
+At the beginning of each session, run:
+
+```{r}
+textsem_init()
+```
+
+## Dataset
+
 For illustration, we will a set of student evaluation of teaching data.
 The data were scraped from an online website conforming to its site
 requirement. In total, we have 11,873,668 teaching evaluations on
@@ -58,25 +72,62 @@ data(prof1000)
 str(prof1000)
 ```
 
-
 ### Sentiment Analysis
 
 In this example, the overall sentiment of the text was extracted and
 used as a mediator. The function `sem.text` can be used to estimated the
 model.
 
+Using dictionary-based sentiment analysis:
+
+```{r}
+model <- 'teaching =~ rating + comments + tags
+          teaching ~ book + difficulty + gender
+         '
+res <- sem.sentiment(model = model,
+                df = prof1000,
+                text_var = c('comments', 'tags'), 
+                method = 'sentimentr')
+res$model
+res$estimate
+lavaan::summary(res$estimates, fit = TRUE)
+```
+
+Using AI-based sentiment analysis:
+
 ```{r}
 # Outcome variable: rating, grade
 # Predictor: book, attendance, difficulty
 # Mediator: comments
 
-model <- ' rating ~ book + attendance + difficulty + comments + tags
+model <- ' rating ~ book + attendance + difficulty + comments
            grade ~ book + attendance + difficulty + comments
            comments ~ book + attendance + difficulty
          '
+
 res <- sem.sentiment(model = model,
-                data = prof1000,
-                text_var=c('tags', 'comments'))
+                df = prof1000,
+                text_var = c('comments'),
+                method = "sentiment.ai")
+
+lavaan::summary(res$estimates, fit = TRUE)
+```
+
+Multiple text variables:
+
+```{r}
+# Outcome variable: rating, grade
+# Predictor: book, attendance, difficulty
+# Mediator: comments, tags
+
+model <- ' rating ~ book + attendance + difficulty + comments
+           grade ~ book + attendance + difficulty + comments
+           comments ~ book + attendance + difficulty + tags
+         '
+res <- sem.sentiment(model = model,
+                df = prof1000,
+                text_var = c('comments', 'tags'),
+                method = 'sentimentr')
 
 res$model
 summary(res$estimates, fit = TRUE)
@@ -87,6 +138,8 @@ mediator between whether a book is required and the grade and rating.
 
 ```{r}
 plot.res <- lavaan2ram(res$estimates, ram.out = F)
+# Filter out intercepts by removing rows where the predictor is missing or equals "1" (common in RAM formats for intercepts)
+# plot.res <- plot.res[plot.res$lhs != "1", ]
 plot.res.path <- ramPathBridge(plot.res, F, F)
 plot(plot.res.path, 'sentiment', output.type='dot')
 
@@ -153,10 +206,13 @@ plot.res <- lavaan2ram(res$estimates, ram.out = F)
 plot.res.path <- ramPathBridge(plot.res, F, F)
 plot(plot.res.path, 'topic', output.type='dot')
 
-grViz('topic.dot')
+graph <- grViz('topic.dot')
+
+svg_graph <- DiagrammeRsvg::export_svg(graph)
+rsvg::rsvg_pdf(charToRaw(svg_graph), file = "output/topic_path.pdf")
 ```
 
-Note that multiple text variables can be included:
+Multiple text variables:
 
 ```{r}
 model <- ' rating ~ book + difficulty + comments + tags'
@@ -169,138 +225,30 @@ summary(res$estimates, fit=TRUE)
 
 ### Sentence Embedding
 
-Sentence embeddings can be retrived from pre-trained models, most of which are implemented in Python. To use them here, we can leverage the `reticulate` R package:
+The `sem.encode` function generates sentence embeddings using specified pre-trained models from the SentenceBERT or OpenAI GPT series. It allows for reduction of dimensionality using either Singular Value Decomposition (SVD) or Principal Component Analysis (PCA).
+
+The `sem.emb` function integrates sentence embeddings into SEM.
+
+Example 1: SentenceBERT embeddings + PCA
 
 ```{r}
-library(reticulate)
-
-## First time set-up
-# virtualenv_create("r-reticulate")
-# py_install("pandas")
-# py_install("transformers")
-# py_install("torch")
-# py_install("sentence_transformers")
-
-## Call virtual environment
-use_virtualenv("r-reticulate")
-
-# Track error
-# py_last_error()
+prof.head <- head(prof1000, 30)
+sem_model <- ' rating ~ book + difficulty + comments'
+reduced_embeddings <- sem.encode(prof.head$comments, encoder = "all-mpnet-base-v2", reduce_method = "PCA")
+result <- sem.emb(sem_model = sem_model, data = prof.head, text_var = "comments", encoder = "all-mpnet-base-v2", reduce_method = "PCA", reduce_dim = 5)
+lavaan::summary(result$estimates, fit=TRUE)
 ```
 
-R Markdown and knitr support code chucks in Python.
-
-```{python}
-## Set environment variables
-import os
-os.environ["TOKENIZERS_PARALLELISM"] = "false"
-
-## Load data
-import pandas as pd
-df = pd.read_csv("data-raw/prof1000.original.csv")
-df = df.head()
-print(df)
-```
-
-One option is to get text embedding of a BERT model from [Huggingface](https://huggingface.co/):
-
-```{python}
-from transformers import BertModel, BertTokenizer
-import torch
-
-model_name = 'bert-base-uncased'
-tokenizer = BertTokenizer.from_pretrained(model_name)
-model = BertModel.from_pretrained(model_name)
-
-def get_embedding(text):
-    inputs = tokenizer(text, return_tensors='pt', padding=True, truncation=True, max_length=128)
-    with torch.no_grad():
-        outputs = model(**inputs)
-        embedding = outputs.last_hidden_state[:, 0, :].squeeze().numpy()
-    return embedding
-df['emb_comments'] = df['comments'].apply(get_embedding)
-
-print(df)
-```
-
-Another is from [sentence transformers](https://sbert.net/):
-
-```{python}
-from sentence_transformers import SentenceTransformer
-
-model = SentenceTransformer("all-mpnet-base-v2")
-df['emb_comments'] = df['comments'].apply(model.encode)
-
-# Or get the npy array directly:
-# embeddings = model.encode(df['comments'])
-# embeddings
-```
-
-Alternatively, we can simply call the `TextSEM::sem.encode()` function, which is a wrapper of sentence transformers:
+Example 2: GPT embeddings + SVD
 
 ```{r}
-embeddings <- sem.encode(prof.nest$comments)
-dim(embeddings)
+Sys.setenv(OPENAI_API_KEY = "Your API key") # Setting up OpenAI api key in your system
 
-save(embeddings, file="../data/prof.nest.emb.rda")
-```
-
-In the following example, we can use the text data to predict the numerical
-rating. With the embedded vectors, we can fit a regression model as
-
-
-$$
-rating_i = \beta_0 + \sum_{j=1}^{n}\beta_j v_{ij} + e_i
-$$
-
-where n is the length of the embedding of each text (here, n = 768). We can use a regression model to estimate the model:
-
-```{r eval = FALSE}
-# Retrieve the saved word embeddings
-load("../data/prof.nest.emb.rda")
-
-## Select and organize the data
-reg.data <- cbind(prof.nest$rating, embeddings)
-reg.data <- as.data.frame(reg.data)
-names(reg.data)[1] <- 'rating'
-
-reg.model <- lm(rating ~ ., data = reg.data)
-
-## Calculate R2
-reg.est <- summary(reg.model)
-reg.est$r.squared
-
-## Visualize the coefficients and its significance
-plot(reg.est$coefficients[-1, 1], type='h', ylab='Coefficients')
-plot(reg.est$coefficients[-1, 4], type='h', ylab='p-value')
-abline(h=.05)
-
-## Number of significant predictors
-sum(reg.est$coefficients[-1, 4] < .05)
+prof.head <- head(prof1000, 30)
+sem_model <- ' rating ~ book + difficulty + comments'
+reduced_embeddings <- sem.encode(prof.head$comments, encoder = "text-embedding-3-small", reduce_method = "SVD")
+result <- sem.emb(sem_model = sem_model, data = prof.head, text_var = "comments", encoder = "text-embedding-3-small", reduce_method = "SVD", reduce_dim = 5)
+lavaan::summary(result$estimates, fit=TRUE)
 ```
 
 
-Or, use `TextSEM::sem.emb()`:
-
-(This is extremely slow, probably because lavaan cannot take too many variables. I took the first 10 items for test use.)
-
-```{r}
-model <- ' rating ~ book + difficulty + comments'
-
-res <- sem.emb(prof.nest, text_var = "comments", sem_model = model)
-
-## Alternatively, load embeddings through files: 
-sem.emb(prof.nest, text_var = "comments", sem_model = model, emb_file_path = "../data/prof.nest.emb.rda")
-
-summary(res, fit=TRUE)
-```
-
-Plot the path diagram:
-
-```{r}
-plot.res <- lavaan2ram(res, ram.out = F)
-plot.res.path <- ramPathBridge(plot.res, F, F)
-plot(plot.res.path, 'embedding', output.type='dot')
-
-grViz('embedding.dot')
-```

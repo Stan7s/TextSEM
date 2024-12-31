@@ -4,11 +4,9 @@
 \alias{sem.lda}
 \title{Perform Latent Dirichlet Allocation on a Data Frame}
 \usage{
-sem.lda(data, text_var, n_topic, method = "VEM", sparse = 0.995, seed = 42)
+sem.lda(df, text_var, n_topic, method = "VEM", sparse = 0.995, seed = 42)
 }
 \arguments{
-\item{data}{A data frame containing the data.}
-
 \item{text_var}{A variable in the data frame containing the text data to be analyzed.}
 
 \item{n_topic}{Number of topics to be extracted.}
@@ -18,6 +16,8 @@ sem.lda(data, text_var, n_topic, method = "VEM", sparse = 0.995, seed = 42)
 \item{sparse}{A numeric for the maximal allowed sparsity in the range from bigger zero to smaller one.}
 
 \item{seed}{Random seed for LDA estimation}
+
+\item{data}{A data frame containing the data.}
 }
 \value{
 A topic model object of class "LDA" from the `topicmodels` package.

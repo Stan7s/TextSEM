@@ -4,12 +4,21 @@
 \alias{sem.encode}
 \title{Generate Sentence Embeddings using Sentence Transformers}
 \usage{
-sem.encode(text_vector, model_name = "all-mpnet-base-v2")
+sem.encode(
+  text_vector,
+  encoder = "all-mpnet-base-v2",
+  reduce_method = "SVD",
+  reduce_dim = 5
+)
 }
 \arguments{
 \item{text_vector}{A character vector containing the text data to be embedded.}
 
-\item{model_name}{A character string specifying the name of the pre-trained model to be used for generating embeddings.}
+\item{encoder}{A character string specifying the name of the pre-trained model to be used for generating embeddings.}
+
+\item{reduce_method}{Dimension reduction method for embeddings. Can be either "SVD" or "PCA".}
+
+\item{reduce_dim}{An integer denoting the size of embedding after reduction.}
 }
 \value{
 A matrix of sentence embeddings with each row corresponding to a sentence from `text_vector` and each column representing a dimension of the embedding space.

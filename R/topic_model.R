@@ -24,9 +24,8 @@
 #' lda.model <- sem.lda(df, text_var = c("comments"), n_topic = c(6))
 #' lda.model
 #' }
-sem.lda <- function(data, text_var, n_topic, method = "VEM", sparse = .995, seed = 42){
+sem.lda <- function(df, text_var, n_topic, method = "VEM", sparse = .995, seed = 42){
 
-  df <- data
   df["row_index"] <- 1:nrow(df)
 
   # Split text into terms (words)

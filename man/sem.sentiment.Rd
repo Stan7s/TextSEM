@@ -6,9 +6,10 @@
 \usage{
 sem.sentiment(
   model,
-  data,
+  df,
   text_vars,
-  text_stats = c("OverallSenti"),
+  method = "sentimentr",
+  text_stats = c("sentiment"),
   polarity_dt = lexicon::hash_sentiment_jockers_rinker,
   valence_shifters_dt = lexicon::hash_valence_shifters,
   missing = "ML",
@@ -19,7 +20,7 @@ sem.sentiment(
 \arguments{
 \item{model}{The structural equation model specified as a character string.}
 
-\item{data}{A data frame containing the input data.}
+\item{df}{A data frame containing the input data.}
 
 \item{text_vars}{A character vector of text variable names in the data frame for which sentiment analysis should be performed.}
 

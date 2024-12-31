@@ -5,23 +5,29 @@
 \title{Structural Equation Modeling with Embeddings}
 \usage{
 sem.emb(
-  df,
-  text_var,
   sem_model,
-  emb_file_path = NULL,
-  encoder_model = "all-mpnet-base-v2"
+  data,
+  text_var,
+  encoder = "all-mpnet-base-v2",
+  emb_filepath = NULL,
+  reduce_method = "SVD",
+  reduce_dim = 5
 )
 }
 \arguments{
-\item{df}{A data frame containing the input data.}
+\item{sem_model}{A character string specifying the SEM model.}
+
+\item{data}{A data frame containing the input data.}
 
 \item{text_var}{A character string specifying the name of the text variable in the data frame.}
 
-\item{sem_model}{A character string specifying the SEM model.}
+\item{encoder}{A character string specifying the encoder model to be used for generating embeddings. Defaults to "all-mpnet-base-v2".}
 
-\item{emb_file_path}{A character string specifying the path to the `.rda` file containing the embeddings. If `NULL`, embeddings are generated using `sem.encode`.}
+\item{emb_filepath}{A character string specifying the path to the `.rda` file containing the embeddings. If `NULL`, embeddings are generated using `sem.encode`.}
 
-\item{encoder_model}{A character string specifying the encoder model to be used for generating embeddings. Defaults to "all-mpnet-base-v2".}
+\item{reduce_dim}{An integer denoting the size of embedding after reduction.}
+
+\item{pca_dim}{A integer specifying reduced dimension through PCA.}
 }
 \value{
 The result of the `lavaan::sem` function, which is an object of class `lavaan`.
@@ -31,9 +37,10 @@ This function performs Structural Equation Modeling (SEM) using text embeddings.
 }
 \examples{
 \dontrun{
-df <- data.frame(text = c("I love this!", "I hate that!"), rating = c(5, 1))
-sem_model <- "rating ~ text"
-result <- sem.emb(df, text_var = "text", sem_model = sem_model, emb_file_path = "embeddings.rda")
-summary(result)
+sem_model <- 'rating ~ book + difficulty + comments'
+res <- sem.emb(sem_model = sem_model, data = prof.nest, text_var = "comments",
+                pca_dim = 10, emb_model = "all-mpnet-base-v2")
+summary(res, fit=TRUE)
 }
+
 }

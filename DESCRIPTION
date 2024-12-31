@@ -29,7 +29,8 @@ Imports:
     tidyr,
     reticulate,
     sentimentr,
-    data.table
+    data.table,
+    sentiment.ai
 URL: https://github.com/Stan7s/TextSEM
 BugReports: https://github.com/Stan7s/TextSEM/issues
 Depends: 

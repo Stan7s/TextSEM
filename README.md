@@ -62,7 +62,7 @@ str(prof1000)
 ### Sentiment Analysis
 
 In this example, the overall sentiment of the text was extracted and
-used as a mediator. The function `sem.text` can be used to estimated the
+used as a mediator. The function `sem.sentiment` can be used to estimated the
 model.
 
 Using dictionary-based sentiment analysis:

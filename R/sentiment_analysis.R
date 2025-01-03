@@ -65,11 +65,11 @@ sem.sentiment <- function(model,
     # print("text_score")
     # print(as.data.frame(text_score))
 
-    print("456")
+    #print("456")
     data_new <- cbind(df, as.data.frame(text_scores))
     names(data_new) <- c(names(df), paste0(rep(text_vars, each = length(text_stats)), '.', text_stats))
-    print("data_new")
-    print(names(data_new))
+    #print("data_new")
+    #print(names(data_new))
 
     model_lavaanify <- lavaanify(model)
     model_user <- model_lavaanify[model_lavaanify$user==1, ]

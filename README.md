@@ -218,6 +218,8 @@ pre-trained models from the SentenceBERT or OpenAI GPT series. It allows
 for reduction of dimensionality using either Singular Value
 Decomposition (SVD) or Principal Component Analysis (PCA).
 
+This function currently only supports one text variable.
+
 The `sem.emb` function integrates sentence embeddings into SEM.
 
 Example 1: SentenceBERT embeddings + PCA
@@ -225,7 +227,7 @@ Example 1: SentenceBERT embeddings + PCA
 ``` r
 prof.head <- head(prof1000, 30)
 sem_model <- ' rating ~ book + difficulty + comments'
-reduced_embeddings <- sem.encode(prof.head$comments, encoder = "all-mpnet-base-v2", reduce_method = "PCA")
+#reduced_embeddings <- sem.encode(prof.head$comments, encoder = "all-mpnet-base-v2", reduce_method = "PCA")
 result <- sem.emb(sem_model = sem_model, data = prof.head, text_var = "comments", encoder = "all-mpnet-base-v2", reduce_method = "PCA", reduce_dim = 5)
 lavaan::summary(result$estimates, fit=TRUE)
 ```
@@ -237,7 +239,7 @@ Sys.setenv(OPENAI_API_KEY = "Your API key") # Setting up OpenAI api key in your 
 
 prof.head <- head(prof1000, 30)
 sem_model <- ' rating ~ book + difficulty + comments'
-reduced_embeddings <- sem.encode(prof.head$comments, encoder = "text-embedding-3-small", reduce_method = "SVD")
+#reduced_embeddings <- sem.encode(prof.head$comments, encoder = "text-embedding-3-small", reduce_method = "SVD")
 result <- sem.emb(sem_model = sem_model, data = prof.head, text_var = "comments", encoder = "text-embedding-3-small", reduce_method = "SVD", reduce_dim = 5)
 lavaan::summary(result$estimates, fit=TRUE)
 ```

@@ -31,6 +31,7 @@ sem.sentiment <- function(model,
                      valence_shifters_dt = lexicon::hash_valence_shifters,
                      missing = 'ML',
                      fixed.x = FALSE,
+                     envname = 'r-reticulate',
                      ...){
 
   ## parse the model
@@ -52,7 +53,7 @@ sem.sentiment <- function(model,
         text_batches <- split(text, ceiling(seq_along(text) / batch_size))
         scores <- data.table::rbindlist(lapply(text_batches, sentiment_by))$ave_sentiment
       }else if(method == "sentiment.ai"){
-        scores <- unname(sentiment_score(text))
+        scores <- unname(sentiment_score(text, envname=envname))
       }
       return(scores)
     }

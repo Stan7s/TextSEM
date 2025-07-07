@@ -31,7 +31,7 @@ textsem_install <- function(envname = "r-reticulate"){
   py_install("scikit-learn", envname = envname)
   py_install("matplotlib", envname = envname)
   py_install("tensorflow", envname = envname)
-  py_install("tensorflow-text", envname = envname)
+  py_install("tensorflow_text", envname = envname)
 }
 
 #' Initialize Environment

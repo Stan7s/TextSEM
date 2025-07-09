@@ -54,8 +54,8 @@ sem.encode <- function(text_vector, encoder = "all-mpnet-base-v2", reduce_method
     U <- svd_result$u
     D <- diag(svd_result$d[1:reduce_dim])
     reduced_emb <- U[, 1:reduce_dim] %*% D
-    print(dim(reduced_emb))  # Should be n x reduce_dim
-    print(reduced_emb)
+    #print(dim(reduced_emb))  # Should be n x reduce_dim
+    #print(reduced_emb)
   } else if(reduce_method == 'PCA'){
     pca_result <- prcomp(embeddings, scale. = TRUE, center = TRUE)
     reduced_emb <- pca_result$x[, 1:reduce_dim]

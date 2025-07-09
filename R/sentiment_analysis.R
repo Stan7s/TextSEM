@@ -75,9 +75,9 @@ sem.sentiment <- function(model,
     # print("model_user")
     # print(model_user)
 
-    for (k in 1:length(text_var)){
+    for (k in 1:length(text_vars)){
   
-  text_var_k <- text_var[k]
+  text_var_k <- text_vars[k]
   model <- gsub(text_var_k, paste0(text_var_k, ".", text_stats), model)
 
   }

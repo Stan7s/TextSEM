@@ -72,17 +72,17 @@ sem.sentiment <- function(model,
     #print("data_new")
     #print(names(data_new))
 
-    model_lavaanify <- lavaanify(model)
-    model_user <- model_lavaanify[model_lavaanify$user==1, ]
     # print("model_user")
     # print(model_user)
 
     for (k in 1:length(text_var)){
   
   text_var_k <- text_var[k]
-  model_new <- gsub(text_var_k, paste0(text_var_k, ".", text_stats), model)
+  model <- gsub(text_var_k, paste0(text_var_k, ".", text_stats), model)
 
   }
+
+    model_new <- model
     # print(model_new)
     # model_new <- paste0(model_new, collapse = '\n')
   }

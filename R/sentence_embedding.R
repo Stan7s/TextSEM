@@ -49,6 +49,8 @@ sem.encode <- function(text_vector, encoder = "all-mpnet-base-v2", reduce_method
     stop("Encoder not supported.")
   }
 
+  reduced_emb <- embeddings
+
   if(reduce_method == "SVD"){
     svd_result <- svd(embeddings)
     U <- svd_result$u

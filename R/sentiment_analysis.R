@@ -77,21 +77,12 @@ sem.sentiment <- function(model,
     # print("model_user")
     # print(model_user)
 
-    model_new <- c()
-    for(i in 1:nrow(model_user)){
-      row <- model_user[i,]
-      # print(row)
-      if((row['lhs'] %in% text_vars) && (row['rhs'] %in% text_vars)){
-        model_new <- c(model_new, paste0(rep(paste0(row['lhs'], '.', text_stats), each = length(text_stats)),
-                                         ' ', row['op'], ' ', rep(paste0(row['rhs'], '.', text_stats), length(text_stats))))
-      } else if(row['lhs'] %in% text_vars){
-        model_new <- c(model_new, paste0(row['lhs'], '.', text_stats, ' ', row['op'], ' ', row['rhs']))
-      } else if(row['rhs'] %in% text_vars){
-        model_new <- c(model_new, paste0(row['lhs'], ' ', row['op'], ' ', row['rhs'], '.', text_stats))
-      } else{
-        model_new <- c(model_new, paste0(row['lhs'],  ' ', row['op'], ' ', row['rhs']))
-      }
-    }
+    for (k in 1:length(text_var)){
+  
+  text_var_k <- text_var[k]
+  model_new <- gsub(text_var_k, paste0(text_var_k, ".", text_stats), model)
+
+  }
     # print(model_new)
     # model_new <- paste0(model_new, collapse = '\n')
   }
